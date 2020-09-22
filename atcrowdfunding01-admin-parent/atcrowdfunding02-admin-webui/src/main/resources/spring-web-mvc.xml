@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+<!-- Configure automatic scan package: scan handler -->
+	
+	<context:component-scan base-package="com.atguigu.crowd.mvc"/>
+	
+	<!-- Configure SpringMVC annotation driver -->
+	<mvc:annotation-driven/>
+	
+	<!-- Configure view resolver -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+	
+	<!-- Configure XML-based exception mapping -->
+	<bean id="simpleMappingExceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<!-- Configure the corresponding relationship between the exception type and the specific view page -->
+		<property name="exceptionMappings">
+			<props>
+				<!-- The key attribute specifies the full class name of the exception -->
+<!-- Write the corresponding view in the tag body (this value needs to be spelled with prefix and suffix to get the specific path) -->
+				
+				<prop key="java.lang.Exception">system-error</prop>
+				<prop key="com.atguigu.crowd.exception.AccessForbiddenException">admin-login</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<!-- Configure view-controller, directly associate the request address with the view name, no need to write the handler method -->
+	<!-- 
+		@RequestMapping("/admin/to/login/page.html")
+		public String toLoginPage(){
+			return "admin-login";
+		}
+	 -->
+	<mvc:view-controller path="/admin/to/login/page.html" view-name="admin-login"/>
+	<mvc:view-controller path="/admin/to/main/page.html" view-name="admin-main"/>
+	<mvc:view-controller path="/admin/to/add/page.html" view-name="admin-add"/>
+	<mvc:view-controller path="/role/to/page.html" view-name="role-page"/>
+	<mvc:view-controller path="/menu/to/page.html" view-name="menu-page"/>
+	
+	<!-- Registration interceptor: The current custom login interceptor is no longer used after using Spring Security
+	<mvc:interceptors>
+		<mvc:interceptor>
+			mvc:mapping configuration to intercept resources
+			/*Corresponding to a path, such as：/aaa
+			/**Corresponds to multi-level paths, such as：/aaa/bbb或/aaa/bbb/ccc或/aaa/bbb/ccc/ddd
+			<mvc:mapping path="/**"/>
+			
+			mvc: exclude-mapping configuration does not intercept recources
+			<mvc:exclude-mapping path="/admin/to/login/page.html"/>
+			<mvc:exclude-mapping path="/admin/do/login.html"/>
+			<mvc:exclude-mapping path="/admin/do/logout.html"/>
+			
+			Configure the interceptor class
+			
+			<bean class="com.atguigu.crowd.mvc.interceptor.LoginInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors> -->
+	
+</beans>

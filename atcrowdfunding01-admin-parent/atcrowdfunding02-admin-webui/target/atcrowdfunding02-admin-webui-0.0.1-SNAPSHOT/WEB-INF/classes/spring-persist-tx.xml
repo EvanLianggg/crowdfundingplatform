@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+<!-- Configure automatic scanning package: mainly to scan Service into IOC container -->
+	
+	<context:component-scan base-package="com.atguigu.crowd.service"/>
+	
+<!-- Configure transaction manager -->
+	
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- 装配数据源 -->
+		<property name="dataSource" ref="dataSource"/>
+		
+	</bean>
+	
+<!-- Assembly data source -->
+	
+	<aop:config>
+<!-- Considering that we will integrate Spring Security later, avoid adding UserDetailsService to transaction control, and let the entry point expression locate to ServiceImpl -->
+		
+		<aop:pointcut expression="execution(* *..*ServiceImpl.*(..))" id="txPointcut"/>
+		
+		<!-- Associate the entry point expression with the transaction notification -->
+		
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
+	</aop:config>
+	
+<!-- Configure transaction notification -->
+	
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+	
+<!-- Configure transaction attributes -->
+		
+		<tx:attributes>
+			
+<!-- Query method: configure the read-only attribute to let the database know that this is a query operation, which can be optimized -->
+			
+			<tx:method name="get*" read-only="true"/>
+			<tx:method name="find*" read-only="true"/>
+			<tx:method name="query*" read-only="true"/>
+			<tx:method name="count*" read-only="true"/>
+			
+<!-- Addition, deletion and modification method: configuration transaction propagation behavior, rollback exception -->
+			
+			<!-- 
+REQUIRED: The default value, which means that the current method must work in a transaction. If there is no transaction already opened on the current thread, a new transaction will be opened. If it already exists, then use this existing transaction.
+				
+					Concerns: It is possible to "be" rolled back with other people's affairs.
+						
+					REQUIRES_NEW: The recommended value, which means that regardless of whether there is a transaction on the current thread, you must open your own transaction and run in your own transaction.
+Benefit: Will not be affected by the rollback of other transactions.
+						
+			 -->
+			<!-- 
+				rollback-for attribute: configure the transaction method for what exception rollback
+Default: abnormal rollback at runtime
+					
+Recommendation: Both compile-time exceptions and runtime exceptions are rolled back
+					
+			 -->
+			<tx:method name="save*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			<tx:method name="update*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			<tx:method name="remove*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			<tx:method name="batch*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+			
+		</tx:attributes>
+	
+	</tx:advice>
+	
+	<!-- ConfigureBCryptPasswordEncoder的bean -->
+	<bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+</beans>

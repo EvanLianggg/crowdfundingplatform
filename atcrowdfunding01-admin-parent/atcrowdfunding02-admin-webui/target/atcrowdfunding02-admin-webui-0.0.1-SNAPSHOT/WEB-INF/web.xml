@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+	
+	<!-- needed for ContextLoaderListener -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:spring-persist-*.xml</param-value>
+	</context-param>
+	
+	<!-- Bootstraps the root web application context before servlet initialization -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	
+	<filter>
+		<filter-name>CharacterEncodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<!-- Specify character set -->
+		
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<!-- Mandatory request to set the character set -->
+		<init-param>
+			<param-name>forceRequestEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<!-- Mandatory response set character set -->
+		<init-param>
+			<param-name>forceResponseEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	
+	<!-- The order of execution of this Filter must be before all other Filters -->
+	<!-- The reason is as follows： -->
+	<!-- request.setCharacterEncoding(encoding) must be before request.getParameter() -->
+	<!-- response.setCharacterEncoding(encoding) must be before response.getWriter() -->
+	<filter-mapping>
+		<filter-name>CharacterEncodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<!-- The front controller of this Spring Web application, responsible for handling all application requests -->
+	<servlet>
+		<servlet-name>springDispatcherServlet</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath:spring-web-mvc.xml</param-value>
+		</init-param>
+		<!-- In the default life cycle of Servlet, the object is created when the request is first received  -->
+		<!-- After the DispatcherServlet creates the object, there is a lot of "frame initialization" work, which is not suitable for the first request  -->
+		<!-- Setting load-on-startup is to allow DispatcherServlet to create objects and initialize when the web application starts -->
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<!-- Map all requests to the DispatcherServlet for handling -->
+	<servlet-mapping>
+		<servlet-name>springDispatcherServlet</servlet-name>
+		<!-- url-pattern configuration method one: / means to intercept all requests -->
+		<!-- <url-pattern>/</url-pattern> -->
+		
+		<!-- url-pattern configuration method two: configure request extension -->
+		<!-- Advantage 1: xxx.css, xxx.js, xxx.png and other static resources do not go through SpringMVC at all and do not require special treatment -->
+		<!-- Advantage 2: pseudo-static effect can be achieved. On the surface it looks like a static resource such as an HTML file is accessed, but it is actually the result of a Java code operation. -->
+		<!-- 	Pseudo-static function 1: Increase the difficulty of hacker intrusion。 -->
+		<!-- 	Pseudo-static effect 2: Conducive to SEO optimization (make it easier for search engines such as Baidu and Google to find our project). -->
+		<!-- Disadvantages: not in line with RESTFul style -->
+		<url-pattern>*.html</url-pattern>
+		
+		<!-- Why do we need to configure the json extension? -->
+		<!-- If an Ajax request extension is html, but the actual server returns json data to the browser, the two will not match, and a 406 error will occur. -->
+		<!-- In order to allow Ajax requests to successfully get the response data in JSON format, we additionally configure the json extension -->
+		<url-pattern>*.json</url-pattern>
+	</servlet-mapping>
+	
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+</web-app>

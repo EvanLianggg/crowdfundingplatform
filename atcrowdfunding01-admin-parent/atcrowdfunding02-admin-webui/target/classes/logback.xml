@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+	<!-- Specify the location of log output -->
+	<appender name="STDOUT"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<!-- Format of log output -->
+			<!-- In the order they are: time, log level, thread name, log type, log body content, line feed -->
+			<pattern>[%d{HH:mm:ss.SSS}] [%-5level] [%thread] [%logger] [%msg]%n</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- Set the global log level. The log levels in order are: DEBUG, INFO, WARN, ERROR -->
+	<!-- Specify any log level to print only the logs of the current level and subsequent levels. -->
+	<root level="DEBUG">
+		<!-- Specify the appender that prints the log, here the appender configured earlier is referenced through "STDOUT" -->
+		<appender-ref ref="STDOUT" />
+	</root>
+
+	<!-- Specify the local log level according to special needs -->
+	<logger name="com.atguigu.crowd.mapper" level="DEBUG"/>
+	
+</configuration>

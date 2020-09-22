@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+<!-- Load external properties file -->
+	<context:property-placeholder location="classpath:jdbc.properties"/>
+	
+	<!-- Configure data source -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+		<property name="username" value="${test.user}"/>
+		<property name="password" value="${test.password}"/>
+		<property name="url" value="${test.url}"/>
+		<property name="driverClassName" value="${test.driver}"/>
+	</bean>
+	
+	<!-- Configure SqlSessionFactoryBean to integrate MyBatis -->
+	<bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- Specify the location of the MyBatis global configuration file -->
+		<property name="configLocation" value="classpath:mybatis-config.xml"/>
+		
+		<!-- Specify the location of the Mapper.xml configuration file -->
+		<property name="mapperLocations" value="classpath:mybatis/mapper/*Mapper.xml"/>
+		
+		<!-- Assembly data source -->
+		<property name="dataSource" ref="dataSource"/>
+		
+		<!-- Configuration plugin -->
+		<property name="plugins">
+			<array>
+				<!-- Configure PageHelper plugin -->
+				<bean class="com.github.pagehelper.PageHelper">
+					<property name="properties">
+						<props>
+							<!-- Configure the database dialect, tell PageHelper the current database -->
+							<prop key="dialect">mysql</prop>
+							
+							<!-- The rationalization correction of the configuration page number, the page number is corrected between 1 and the total number of pages -->
+							<prop key="reasonable">true</prop>
+						</props>
+					</property>
+				</bean>
+			</array>
+		</property>
+	</bean>
+	
+	<!-- Configure MapperScannerConfigurer to scan the package where the Mapper interface is located -->
+	<bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.atguigu.crowd.mapper"/>
+	</bean>
+
+</beans>
